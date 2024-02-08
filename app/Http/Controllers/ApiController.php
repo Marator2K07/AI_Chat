@@ -2,39 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\APIService;
-use App\Services\DatabaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\ApiLog;
 
 class ApiController extends Controller
 {
-    private $apiConnection;
-
-    public function __construct(APIService $apiConnection)
+    public function sendRequest(Request $request)
     {
-        $this->apiConnection = $apiConnection;
-    }
-
-    public function sendRequestAndDisplayResponse(Request $request)
-    {   $apiData = new ApiLog();
-        // Получение данных из запроса
+        // Получаем данные из запроса
         $requestData = $request->all();
 
-        // Отправка запроса к API
-        $response = $this->apiConnection->sendRequest($requestData['url'], $requestData['data']);
+        // Преобразуем запрос в JSON объект
+        $requestJson = json_encode($requestData);
 
-        if($response  == "success")
-        {
-            $apiData->request = json_encode($requestData);
-            $apiData->response = $response;
-            $apiData->save();
-        }
-        // Вывод ответа на экран
-        return response()->json(['response' => $response]);
+        // Отправляем запрос на API
+        $response = Http::post('https://api.example.com/endpoint', $requestData);
 
-        // Сохранение запроса и ответа в базе данных
-        
+        // Получаем ответ от API
+        $responseData = $response->json();
+
+        // Преобразуем ответ в JSON объект
+        $responseJson = json_encode($responseData);
+
+        // Сохраняем запрос и ответ в базе данных
+        $apiLog = new ApiLog;
+        $apiLog->request = $requestJson;
+        $apiLog->response = $responseJson;
+        $apiLog->save();
+
+        // Возвращаем ответ клиенту
+        return response()->json($responseData);
     }
 }
