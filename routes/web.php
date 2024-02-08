@@ -13,9 +13,7 @@ use app\Http\Controllers\ApiController;
 |
 */
 
-
-Route::post('/send-request', [APIController::class, 'sendRequest']);
 Route::get('/', function () {
-  
-    return view('chat');
+    return view('welcome');
 });
+Route::post('/api/send', [ApiController::class, 'sendRequest']);
